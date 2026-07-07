@@ -1,0 +1,78 @@
+# Experiment configurations
+
+experiments:
+  exp1_complexity:
+    description: "How does VoI advantage scale with environment complexity?"
+    hypothesis: "VoI agent's advantage over baselines grows with complexity because information becomes more valuable in uncertain environments."
+    variable: branch_probability
+    values: [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+    methods: [voi_ppo, baseline_ppo, threshold, greedy, oracle]
+    n_episodes: 100
+    fixed:
+      initial_budget: 8
+      mine_depth: 250
+      observation_noise_std: 0.1
+
+  exp2_budget_pressure:
+    description: "How does budget scarcity affect the value of VoI?"
+    hypothesis: "VoI becomes MORE valuable as budget decreases because each decision matters more — wasting a relay is costlier."
+    variable: initial_budget
+    values: [12, 10, 8, 6, 5, 4]
+    methods: [voi_ppo, baseline_ppo, threshold, greedy]
+    n_episodes: 100
+    fixed:
+      branch_probability: 0.15
+      mine_depth: 250
+
+  exp3_ablation:
+    description: "Contribution of each component: VoI vs adaptive exploration"
+    hypothesis: "Both components contribute independently; combined is best."
+    conditions:
+      - label: "Full (VoI + Adaptive Exploration)"
+        use_voi: true
+        use_adaptive_exploration: true
+      - label: "VoI Only"
+        use_voi: true
+        use_adaptive_exploration: false
+      - label: "Adaptive Exploration Only"
+        use_voi: false
+        use_adaptive_exploration: true
+      - label: "Vanilla PPO"
+        use_voi: false
+        use_adaptive_exploration: false
+    n_episodes: 100
+
+  exp4_noise_robustness:
+    description: "How robust is VoI to noisy observations?"
+    hypothesis: "VoI should degrade gracefully — noisy observations reduce information value, making VoI estimates less useful but not harmful."
+    variable: observation_noise_std
+    values: [0.01, 0.05, 0.1, 0.15, 0.2, 0.3]
+    methods: [voi_ppo, baseline_ppo, threshold]
+    n_episodes: 100
+
+  exp5_generalization:
+    description: "Out-of-distribution generalization to unseen mine types"
+    hypothesis: "VoI generalizes better than standard PPO because information-awareness is a general principle, not an environment-specific policy."
+    train_condition:
+      branch_probability: 0.15
+    test_conditions:
+      - branch_probability: 0.05
+        label: "Simpler (OOD)"
+      - branch_probability: 0.15
+        label: "In-distribution"
+      - branch_probability: 0.3
+        label: "Harder (OOD)"
+      - branch_probability: 0.4
+        label: "Much harder (OOD)"
+    methods: [voi_ppo, baseline_ppo]
+    n_episodes: 50
+
+  exp6_exploration_waste:
+    description: "Quantify wasted resources due to exploration in standard RL"
+    hypothesis: "Standard PPO wastes 20-40% of its budget on exploratory commits that provide no signal benefit. VoI wastes <10%."
+    metrics:
+      - fraction_of_deploys_that_were_suboptimal
+      - budget_remaining_at_first_dropout
+      - early_deploy_rate  # deploys in first 20% of episode
+    methods: [voi_ppo, baseline_ppo]
+    n_episodes: 200

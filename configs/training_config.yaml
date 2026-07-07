@@ -1,0 +1,122 @@
+# Environment and training configuration
+
+environment:
+  # Mine topology generation
+  mine:
+    total_depth: 300.0
+    segment_length_mean: 25.0
+    segment_length_std: 10.0
+    branch_probability: 0.15
+    dead_end_ratio: 0.3
+    loop_probability: 0.05
+    width_range: [1.8, 5.0]
+    bend_frequency: 0.05
+    collapse_probability: 0.02
+    geology_correlation: 0.7
+
+  # RF signal propagation
+  propagation:
+    frequency_mhz: 900.0
+    tx_power_dbm: 20.0
+    noise_floor_dbm: -100.0
+    sinr_threshold_db: 10.0
+    path_loss_exponent: 4.0
+    reference_distance_m: 1.0
+    reference_loss_db: 32.0
+    bend_loss_db_per_90deg: 15.0
+    shadowing_std_db: 4.0
+    measurement_noise_std_db: 2.0
+    relay_gain_db: 10.0
+
+  # Episode settings
+  initial_budget: 8
+  max_horizon: 200
+  observation_noise_std: 0.1
+  team_speed: 1.5
+  visibility_radius: 2
+
+training:
+  # PPO hyperparameters
+  learning_rate: 0.0003
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_epsilon: 0.2
+  entropy_coefficient: 0.01
+  value_loss_coefficient: 0.5
+  max_grad_norm: 0.5
+
+  # VoI-specific
+  voi_weight: 1.0
+  voi_loss_coefficient: 0.25
+  voi_update_frequency: 5
+
+  # Training loop
+  n_steps_per_rollout: 2048
+  n_epochs_per_update: 10
+  batch_size: 64
+  total_timesteps: 1000000
+
+  # Curriculum learning
+  use_curriculum: true
+  curriculum:
+    stages:
+      - name: "Linear Tunnels"
+        mine_depth: 80
+        branch_probability: 0.0
+        budget: 10
+        horizon: 60
+        noise: 0.05
+        promotion_threshold: 0.7
+
+      - name: "Simple Branching"
+        mine_depth: 150
+        branch_probability: 0.08
+        budget: 8
+        horizon: 100
+        noise: 0.08
+        promotion_threshold: 0.6
+
+      - name: "Complex Topology"
+        mine_depth: 250
+        branch_probability: 0.15
+        budget: 7
+        horizon: 150
+        noise: 0.1
+        promotion_threshold: 0.5
+
+      - name: "Adversarial Conditions"
+        mine_depth: 400
+        branch_probability: 0.25
+        budget: 6
+        horizon: 200
+        noise: 0.15
+        promotion_threshold: 0.0
+
+  # Resource-adaptive exploration
+  adaptive_exploration:
+    base_entropy_coeff: 0.05
+    min_entropy_coeff: 0.001
+    budget_sensitivity: 2.0
+    time_sensitivity: 1.0
+    warmup_steps: 1000
+
+  # Architecture
+  observation_dim: 24
+  graph_embedding_dim: 64
+  belief_hidden_dim: 128
+  head_hidden_dim: 64
+  gru_layers: 1
+
+evaluation:
+  n_eval_episodes: 100
+  eval_interval: 50000  # evaluate every N training steps
+  seeds: [42, 123, 456, 789, 1024]
+  save_trajectories: true
+
+logging:
+  use_wandb: false
+  project_name: "voi-irreversible-actions"
+  log_interval: 10
+  save_interval: 100000
+  checkpoint_dir: "checkpoints"
+  results_dir: "results"
