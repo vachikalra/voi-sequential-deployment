@@ -1,0 +1,13 @@
+# Streamlit Cloud deployment config
+[theme]
+primaryColor = "#648cff"
+backgroundColor = "#12121a"
+secondaryBackgroundColor = "#1c1c26"
+textColor = "#dcdce6"
+
+[server]
+headless = true
+port = 8501
+
+[browser]
+gatherUsageStats = false
