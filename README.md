@@ -128,19 +128,6 @@ python demo/app.py
 
 ---
 
-## Citation
-
-```bibtex
-@inproceedings{kalra2025voi,
-  title={Value-of-Information Guided Decision Making in Resource-Constrained POMDPs with Irreversible Actions},
-  author={Kalra, Vachi},
-  year={2025},
-  note={Undergraduate Research Symposium}
-}
-```
-
----
-
 ## Requirements
 
 - Python 3.10+
