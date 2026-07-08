@@ -10,7 +10,7 @@ Used as an upper bound for evaluation.
 """
 
 import numpy as np
-from typing import Optional
+from typing import List, Optional, Tuple
 
 try:
     import pulp

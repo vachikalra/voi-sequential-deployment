@@ -7,7 +7,7 @@ in the research, with proper statistical treatment.
 
 import numpy as np
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -54,8 +54,8 @@ class ExperimentResults:
 
 
 def compute_episode_metrics(
-    uptime_history: list[bool],
-    sinr_history: list[float],
+    uptime_history: List[bool],
+    sinr_history: List[float],
     relays_deployed: int,
     total_reward: float,
     sinr_threshold: float = 10.0,
@@ -89,7 +89,7 @@ def compute_episode_metrics(
 
 def aggregate_results(
     method_name: str,
-    episodes: list[EpisodeMetrics],
+    episodes: List[EpisodeMetrics],
     confidence_level: float = 0.95,
 ) -> ExperimentResults:
     """
@@ -143,8 +143,8 @@ def aggregate_results(
 
 
 def statistical_significance_test(
-    results_a: list[EpisodeMetrics],
-    results_b: list[EpisodeMetrics],
+    results_a: List[EpisodeMetrics],
+    results_b: List[EpisodeMetrics],
     metric: str = "communication_uptime",
     alpha: float = 0.05,
 ) -> dict:

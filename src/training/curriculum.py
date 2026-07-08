@@ -12,7 +12,7 @@ The curriculum is critical for irreversible-action problems because:
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 

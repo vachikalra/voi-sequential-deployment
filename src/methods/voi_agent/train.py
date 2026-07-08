@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 
 from ...networks.graph_encoder import RelayGraphEncoder
@@ -83,12 +83,12 @@ class VoIPPOAgent:
         self.observation_encoder = nn.Sequential(
             nn.Linear(config.observation_dim, 128),
             nn.ReLU(),
-            nn.Linear(128, config.graph_embedding_dim),
+            nn.Linear(128, config.belief_hidden_dim),
             nn.ReLU(),
         ).to(self.device)
 
         self.belief_module = BeliefModule(
-            input_dim=config.graph_embedding_dim,
+            input_dim=config.belief_hidden_dim,
             hidden_dim=config.belief_hidden_dim,
         ).to(self.device)
 

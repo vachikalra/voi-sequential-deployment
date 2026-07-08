@@ -10,6 +10,7 @@ Three separate neural network heads that share a common belief state:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Tuple
 
 
 class PolicyHead(nn.Module):
@@ -167,7 +168,11 @@ class VoIAugmentedActorCritic(nn.Module):
 
         # Modify logits: boost WAIT by VoI amount
         modified_logits = action_logits.clone()
-        modified_logits[:, 0] += self.voi_weight * voi.squeeze(-1)  # boost WAIT
+        voi_clamped = torch.clamp(voi, 0.0, 10.0)
+        modified_logits[:, 0] += self.voi_weight * voi_clamped.squeeze(-1)  # boost WAIT
+
+        # Safety: replace any NaN with zeros
+        modified_logits = torch.nan_to_num(modified_logits, nan=0.0)
 
         if deterministic:
             action = modified_logits.argmax(dim=-1)
@@ -182,17 +187,20 @@ class VoIAugmentedActorCritic(nn.Module):
 
     def evaluate_actions(
         self, belief: torch.Tensor, actions: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Evaluate given actions (for PPO update).
 
         Returns:
             action_log_probs, values, entropy, voi_estimates
         """
+        belief = torch.nan_to_num(belief, nan=0.0)
         action_logits, value, voi = self.forward(belief)
 
         modified_logits = action_logits.clone()
-        modified_logits[:, 0] += self.voi_weight * voi.squeeze(-1)
+        voi_clamped = torch.clamp(voi, 0.0, 10.0)
+        modified_logits[:, 0] += self.voi_weight * voi_clamped.squeeze(-1)
+        modified_logits = torch.nan_to_num(modified_logits, nan=0.0)
 
         dist = torch.distributions.Categorical(logits=modified_logits)
         log_probs = dist.log_prob(actions)

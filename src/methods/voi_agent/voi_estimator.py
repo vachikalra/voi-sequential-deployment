@@ -15,7 +15,7 @@ We train a network to PREDICT this quantity from o_{1:t} alone (before seeing o_
 import torch
 import torch.nn as nn
 import numpy as np
-from typing import Optional
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 
@@ -62,8 +62,8 @@ class VoIEstimator:
         )
 
         # History buffer for (belief_state, realized_voi) pairs
-        self._belief_buffer: list[torch.Tensor] = []
-        self._voi_target_buffer: list[float] = []
+        self._belief_buffer: List[torch.Tensor] = []
+        self._voi_target_buffer: List[float] = []
 
     def compute_hindsight_voi(
         self,

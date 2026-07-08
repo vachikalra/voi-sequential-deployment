@@ -32,9 +32,10 @@ def flatten_observation(obs: dict) -> np.ndarray:
     for key in sorted(obs.keys()):
         val = obs[key]
         if isinstance(val, np.ndarray):
-            arrays.append(val.flatten().astype(np.float32))
+            arrays.append(np.nan_to_num(val.flatten().astype(np.float32), nan=0.0))
         elif isinstance(val, (int, float)):
-            arrays.append(np.array([val], dtype=np.float32))
+            v = 0.0 if np.isnan(val) else float(val)
+            arrays.append(np.array([v], dtype=np.float32))
     return np.concatenate(arrays)
 
 

@@ -10,6 +10,7 @@ relevant information about unseen parts of the environment.
 
 import torch
 import torch.nn as nn
+from typing import Optional, Tuple
 
 
 class BeliefModule(nn.Module):
@@ -47,7 +48,7 @@ class BeliefModule(nn.Module):
     def forward(
         self,
         observation_embedding: torch.Tensor,
-        hidden: torch.Tensor | None = None,
+        hidden: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Update belief state with new observation.
@@ -121,12 +122,12 @@ class AttentiveBeliefModule(nn.Module):
             nn.LayerNorm(hidden_dim),
         )
 
-        self._memory_buffer: torch.Tensor | None = None
+        self._memory_buffer: Optional[torch.Tensor] = None
 
     def forward(
         self,
         observation_embedding: torch.Tensor,
-        hidden: torch.Tensor | None = None,
+        hidden: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Args:

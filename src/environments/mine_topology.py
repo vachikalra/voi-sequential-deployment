@@ -8,7 +8,7 @@ affect RF signal propagation.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 
 import networkx as nx
 import numpy as np
@@ -80,7 +80,7 @@ class MineTopologyGenerator:
         self._rng = np.random.default_rng(config.seed)
         self._rock_types = list(RockType)
 
-    def generate(self) -> tuple[nx.DiGraph, list[TunnelSegment]]:
+    def generate(self) -> Tuple[nx.DiGraph, list[TunnelSegment]]:
         """
         Generate a random mine topology.
 

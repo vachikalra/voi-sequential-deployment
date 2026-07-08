@@ -10,7 +10,7 @@ Relay placement is irreversible — once deployed, a relay cannot be moved.
 """
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import gymnasium as gym
 import numpy as np
@@ -123,7 +123,7 @@ class RelayDeploymentEnv(IrreversibleActionPOMDP):
         self._uptime_history = []
         self._sinr_history = []
 
-    def _find_exploration_path(self) -> list[int]:
+    def _find_exploration_path(self) -> List[int]:
         """Find a reasonable exploration path through the mine."""
         if not self._segments:
             return [0]

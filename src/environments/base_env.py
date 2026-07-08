@@ -7,7 +7,7 @@ The key constraint: actions of type COMMIT are permanent and decrement a finite 
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import gymnasium as gym
 import numpy as np
@@ -105,7 +105,7 @@ class IrreversibleActionPOMDP(gym.Env, ABC):
 
     def reset(
         self, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> tuple[np.ndarray, dict]:
+    ) -> Tuple[np.ndarray, dict]:
         """Reset environment to initial state."""
         super().reset(seed=seed)
         if seed is not None:
@@ -122,7 +122,7 @@ class IrreversibleActionPOMDP(gym.Env, ABC):
         info = self._get_info()
         return obs, info
 
-    def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """
         Execute one environment step.
 
