@@ -29,10 +29,10 @@ class RelayDeploymentConfig(EnvironmentConfig):
     propagation_config: PropagationConfig = None
     team_speed: float = 1.5              # meters per timestep
     visibility_radius: int = 2           # segments ahead the team can see
-    uptime_reward_weight: float = 1.0
-    deploy_cost_weight: float = 0.1
-    quality_penalty_weight: float = 0.5
-    terminal_bonus_weight: float = 5.0
+    uptime_reward_weight: float = 2.0
+    deploy_cost_weight: float = 0.02
+    quality_penalty_weight: float = 1.0
+    terminal_bonus_weight: float = 10.0
 
     def __post_init__(self):
         if self.mine_config is None:
@@ -86,7 +86,7 @@ class RelayDeploymentEnv(IrreversibleActionPOMDP):
 
     def _build_observation_space(self) -> spaces.Space:
         """Define observation space."""
-        max_relays = self._domain_config.initial_budget
+        max_relays = 10  # fixed size across all curriculum stages
         return spaces.Dict({
             "signal_readings": spaces.Box(
                 low=-50.0, high=50.0, shape=(max_relays,), dtype=np.float32
@@ -123,7 +123,7 @@ class RelayDeploymentEnv(IrreversibleActionPOMDP):
         self._uptime_history = []
         self._sinr_history = []
 
-    def _find_exploration_path(self) -> List[int]:
+    def _find_exploration_path(self) -> list[int]:
         """Find a reasonable exploration path through the mine."""
         if not self._segments:
             return [0]
@@ -169,7 +169,7 @@ class RelayDeploymentEnv(IrreversibleActionPOMDP):
 
     def _generate_observation(self) -> dict[str, np.ndarray]:
         """Generate partial observation of current state."""
-        max_relays = self._domain_config.initial_budget
+        max_relays = 10  # fixed size across all curriculum stages
 
         # Signal readings at deployed relays (noisy)
         signal_readings = np.full(max_relays, -50.0, dtype=np.float32)
@@ -231,22 +231,21 @@ class RelayDeploymentEnv(IrreversibleActionPOMDP):
         cfg = self._domain_config
         reward = 0.0
 
-        # Uptime reward: +1 if connected
+        # Connectivity reward: positive for connected, negative for disconnected
         connected = self._is_chain_connected()
         self._uptime_history.append(connected)
         if connected:
             reward += cfg.uptime_reward_weight
+        else:
+            reward -= cfg.quality_penalty_weight
 
-        # Deploy cost
+        # Deploy cost (small, to not discourage deployment)
         if action == self.COMMIT:
             reward -= cfg.deploy_cost_weight
-
-        # Quality penalty: penalize low SINR
-        min_sinr = self._get_min_sinr()
-        self._sinr_history.append(min_sinr)
-        if min_sinr < self._propagation.config.sinr_threshold_db:
-            deficit = self._propagation.config.sinr_threshold_db - min_sinr
-            reward -= cfg.quality_penalty_weight * (deficit / 20.0)
+            # Bonus for deploying when signal is degrading (good timing)
+            min_sinr = self._get_min_sinr()
+            if min_sinr < self._propagation.config.sinr_threshold_db + 5.0:
+                reward += 0.5  # reward timely deployment
 
         return reward
 
@@ -283,22 +282,55 @@ class RelayDeploymentEnv(IrreversibleActionPOMDP):
         return self._team_segment_idx >= len(self._path) - 1
 
     def _get_min_sinr(self) -> float:
-        """Get the minimum SINR across all hops in relay chain."""
-        if not self._relay_segment_indices and self._team_segment_idx == 0:
+        """Get the minimum SINR across all hops in relay chain.
+        
+        Chain: base_station(0) → relay_1 → relay_2 → ... → team(current_pos)
+        Each hop's SINR is computed over the segments between consecutive nodes.
+        """
+        if self._team_segment_idx == 0:
             return self._propagation.config.tx_power_dbm - self._propagation.config.noise_floor_dbm
 
-        path_segments = [
-            self._segments[self._path[i]]
-            for i in range(min(self._team_segment_idx + 1, len(self._path)))
-            if i < len(self._path)
-        ]
-        if not path_segments:
-            return 0.0
-
-        sinr_values = self._propagation.compute_sinr(
-            path_segments, self._relay_segment_indices, include_fading=False
+        # Build the chain: base at 0, relays at their positions, team at current
+        relay_positions_in_path = sorted(
+            [r for r in self._relay_segment_indices if r <= self._team_segment_idx]
         )
-        return float(np.min(sinr_values)) if len(sinr_values) > 0 else 0.0
+        
+        # Deduplicate: remove relays at position 0 (same as base) 
+        # and at team position (same as destination)
+        chain_nodes = [0]
+        for r in relay_positions_in_path:
+            if r != chain_nodes[-1]:
+                chain_nodes.append(r)
+        if self._team_segment_idx != chain_nodes[-1]:
+            chain_nodes.append(self._team_segment_idx)
+        
+        if len(chain_nodes) < 2:
+            return self._propagation.config.tx_power_dbm - self._propagation.config.noise_floor_dbm
+        
+        min_sinr = float('inf')
+        for i in range(len(chain_nodes) - 1):
+            start = chain_nodes[i]
+            end = chain_nodes[i + 1]
+            
+            # Get segments for this hop
+            hop_segments = [
+                self._segments[self._path[j]]
+                for j in range(start, min(end, len(self._path)))
+            ]
+            
+            if not hop_segments:
+                continue
+            
+            # Compute path loss for this hop
+            hop_pl = sum(self._propagation.compute_path_loss(s) for s in hop_segments)
+            effective_tx = self._propagation.config.tx_power_dbm
+            if i > 0:
+                effective_tx += self._propagation.config.relay_gain_db
+            
+            sinr = effective_tx - hop_pl - self._propagation.config.noise_floor_dbm
+            min_sinr = min(min_sinr, sinr)
+        
+        return min_sinr if min_sinr != float('inf') else 0.0
 
     def _is_chain_connected(self) -> bool:
         """Check if end-to-end communication is maintained."""

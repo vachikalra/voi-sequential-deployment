@@ -86,7 +86,21 @@ def train(
     torch.manual_seed(seed)
 
     # Determine observation dimension by running one step
-    curriculum = CurriculumScheduler()
+    if use_curriculum:
+        curriculum = CurriculumScheduler()
+    else:
+        from src.training.curriculum import CurriculumStage
+        single_stage = [CurriculumStage(
+            name="Fixed Difficulty",
+            mine_depth=500.0,
+            branch_probability=0.15,
+            initial_budget=5,
+            max_horizon=50,
+            observation_noise_std=0.1,
+            promotion_threshold=0.0,
+        )]
+        curriculum = CurriculumScheduler(stages=single_stage)
+
     test_env = make_env(curriculum, seed=seed)
     test_obs, _ = test_env.reset(seed=seed)
     obs_dim = len(flatten_observation(test_obs))
@@ -370,6 +384,8 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--save-dir", type=str, default="checkpoints")
+    parser.add_argument("--no-curriculum", action="store_true",
+                        help="Disable curriculum, train on final stage directly")
     args = parser.parse_args()
 
     if args.eval_only:
@@ -385,4 +401,5 @@ if __name__ == "__main__":
             seed=args.seed,
             device=args.device,
             save_dir=args.save_dir,
+            use_curriculum=not args.no_curriculum,
         )

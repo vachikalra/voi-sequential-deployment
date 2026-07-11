@@ -1,0 +1,68 @@
+{
+  "0.0": {
+    "fixed_interval": {
+      "uptime": 0.2649671141720612
+    },
+    "signal_threshold": {
+      "uptime": 0.4937857142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0
+    }
+  },
+  "0.05": {
+    "fixed_interval": {
+      "uptime": 0.2649671141720612
+    },
+    "signal_threshold": {
+      "uptime": 0.4937857142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0
+    }
+  },
+  "0.1": {
+    "fixed_interval": {
+      "uptime": 0.2649671141720612
+    },
+    "signal_threshold": {
+      "uptime": 0.4937857142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0
+    }
+  },
+  "0.15": {
+    "fixed_interval": {
+      "uptime": 0.2649671141720612
+    },
+    "signal_threshold": {
+      "uptime": 0.4937857142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0
+    }
+  },
+  "0.2": {
+    "fixed_interval": {
+      "uptime": 0.2649671141720612
+    },
+    "signal_threshold": {
+      "uptime": 0.4937857142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0
+    }
+  },
+  "0.3": {
+    "fixed_interval": {
+      "uptime": 0.2649671141720612
+    },
+    "signal_threshold": {
+      "uptime": 0.4937857142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0
+    }
+  }
+}

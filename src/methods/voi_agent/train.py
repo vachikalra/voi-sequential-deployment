@@ -287,7 +287,7 @@ class VoIPPOAgent:
 
     def load(self, path: str) -> None:
         """Load model checkpoint."""
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=False)
         self.observation_encoder.load_state_dict(checkpoint["observation_encoder"])
         self.belief_module.load_state_dict(checkpoint["belief_module"])
         self.actor_critic.load_state_dict(checkpoint["actor_critic"])

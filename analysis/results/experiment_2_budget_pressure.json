@@ -1,0 +1,110 @@
+{
+  "3": {
+    "fixed_interval": {
+      "uptime": 0.250709366340749,
+      "reward": -7.38010633659251
+    },
+    "signal_threshold": {
+      "uptime": 0.5675,
+      "reward": 4.824
+    },
+    "voi_ppo": {
+      "uptime": 1.0,
+      "reward": 6.033400000000001
+    },
+    "baseline_ppo": {
+      "uptime": 1.0,
+      "reward": 5.5642000000000005
+    }
+  },
+  "4": {
+    "fixed_interval": {
+      "uptime": 0.250709366340749,
+      "reward": -7.38010633659251
+    },
+    "signal_threshold": {
+      "uptime": 0.5089761904761905,
+      "reward": 4.819057142857145
+    },
+    "voi_ppo": {
+      "uptime": 1.0,
+      "reward": 7.865999999999999
+    },
+    "baseline_ppo": {
+      "uptime": 1.0,
+      "reward": 7.3858
+    }
+  },
+  "5": {
+    "fixed_interval": {
+      "uptime": 0.250709366340749,
+      "reward": -7.38010633659251
+    },
+    "signal_threshold": {
+      "uptime": 0.4656428571428572,
+      "reward": 4.549357142857143
+    },
+    "voi_ppo": {
+      "uptime": 1.0,
+      "reward": 9.898800000000001
+    },
+    "baseline_ppo": {
+      "uptime": 1.0,
+      "reward": 9.4274
+    }
+  },
+  "6": {
+    "fixed_interval": {
+      "uptime": 0.250709366340749,
+      "reward": -7.38010633659251
+    },
+    "signal_threshold": {
+      "uptime": 0.43236904761904765,
+      "reward": 4.280690476190477
+    },
+    "voi_ppo": {
+      "uptime": 1.0,
+      "reward": 11.762200000000002
+    },
+    "baseline_ppo": {
+      "uptime": 1.0,
+      "reward": 11.539400000000002
+    }
+  },
+  "7": {
+    "fixed_interval": {
+      "uptime": 0.250709366340749,
+      "reward": -7.38010633659251
+    },
+    "signal_threshold": {
+      "uptime": 0.40609126984126975,
+      "reward": 4.013890476190477
+    },
+    "voi_ppo": {
+      "uptime": 1.0,
+      "reward": 13.585999999999999
+    },
+    "baseline_ppo": {
+      "uptime": 1.0,
+      "reward": 13.481999999999998
+    }
+  },
+  "8": {
+    "fixed_interval": {
+      "uptime": 0.250709366340749,
+      "reward": -7.38010633659251
+    },
+    "signal_threshold": {
+      "uptime": 0.38486904761904756,
+      "reward": 3.7122904761904767
+    },
+    "voi_ppo": {
+      "uptime": 1.0,
+      "reward": 15.260199999999998
+    },
+    "baseline_ppo": {
+      "uptime": 1.0,
+      "reward": 15.275
+    }
+  }
+}

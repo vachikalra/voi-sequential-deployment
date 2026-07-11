@@ -51,9 +51,9 @@ class TunnelSegment:
 @dataclass
 class MineTopologyConfig:
     """Configuration for procedural mine generation."""
-    total_depth: float = 300.0          # max depth in meters
-    segment_length_mean: float = 25.0   # mean segment length
-    segment_length_std: float = 10.0    # std of segment length
+    total_depth: float = 500.0          # max depth in meters
+    segment_length_mean: float = 15.0   # mean segment length (shorter segments = longer path)
+    segment_length_std: float = 5.0     # std of segment length
     branch_probability: float = 0.15    # P(fork) at each junction
     dead_end_ratio: float = 0.3         # fraction of branches that dead-end
     loop_probability: float = 0.05      # P(tunnel loops back to existing node)
@@ -80,7 +80,7 @@ class MineTopologyGenerator:
         self._rng = np.random.default_rng(config.seed)
         self._rock_types = list(RockType)
 
-    def generate(self) -> Tuple[nx.DiGraph, list[TunnelSegment]]:
+    def generate(self) -> tuple[nx.DiGraph, list[TunnelSegment]]:
         """
         Generate a random mine topology.
 
@@ -99,8 +99,9 @@ class MineTopologyGenerator:
         frontier = [(0, 0.0, 0.0)]  # (node_id, current_depth, angle)
         next_node_id = 1
         current_rock = self._rng.choice(self._rock_types)
+        max_nodes = 100  # cap complexity for generation speed
 
-        while frontier:
+        while frontier and next_node_id < max_nodes:
             parent_id, depth, heading = frontier.pop(0)
 
             if depth >= self.config.total_depth:
@@ -133,7 +134,8 @@ class MineTopologyGenerator:
                     )
 
                 # Create new node
-                new_depth = depth + seg_length * np.cos(np.radians(new_heading - heading))
+                new_depth = depth + seg_length * abs(np.cos(np.radians(new_heading - heading)))
+                new_depth = max(new_depth, depth + 1.0)  # always advance depth
                 dx = seg_length * np.sin(np.radians(new_heading))
                 dy = seg_length * np.cos(np.radians(new_heading))
                 parent_pos = node_positions[parent_id]

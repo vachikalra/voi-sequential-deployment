@@ -28,17 +28,17 @@ class PropagationConfig:
     """Configuration for the RF propagation model."""
 
     frequency_mhz: float = 900.0         # Operating frequency
-    tx_power_dbm: float = 20.0           # Transmit power (100mW)
+    tx_power_dbm: float = 33.0           # Transmit power (~2W)
     noise_floor_dbm: float = -100.0      # Receiver noise floor
-    sinr_threshold_db: float = 10.0      # Minimum acceptable SINR
-    path_loss_exponent: float = 4.0      # Underground PLE (free space = 2, underground = 3.5-5)
+    sinr_threshold_db: float = 5.0       # Minimum acceptable SINR
+    path_loss_exponent: float = 2.2      # Moderate underground PLE
     reference_distance_m: float = 1.0    # Reference distance for path loss model
-    reference_loss_db: float = 32.0      # Path loss at reference distance
-    bend_loss_db_per_90deg: float = 15.0 # Signal loss per 90-degree bend
-    waveguide_cutoff_width_m: float = 1.5  # Below this, waveguide attenuation dominates
-    shadowing_std_db: float = 4.0        # Log-normal shadowing standard deviation
+    reference_loss_db: float = 20.0      # Path loss at reference distance
+    bend_loss_db_per_90deg: float = 3.0  # Signal loss per 90-degree bend
+    waveguide_cutoff_width_m: float = 1.0  # Below this, waveguide attenuation dominates
+    shadowing_std_db: float = 2.0        # Log-normal shadowing standard deviation
     measurement_noise_std_db: float = 2.0  # Observation noise on SINR measurements
-    relay_gain_db: float = 10.0          # Signal boost provided by a relay node
+    relay_gain_db: float = 20.0          # Signal boost provided by a relay node
 
 
 class SignalPropagationModel:
@@ -158,8 +158,8 @@ class SignalPropagationModel:
         Frequency-dependent absorption by tunnel wall material.
         Moisture increases absorption significantly.
         """
-        base_absorption = rock_type.absorption_coefficient * length_m
-        moisture_factor = 1.0 + 2.0 * moisture  # moisture doubles/triples loss
+        base_absorption = rock_type.absorption_coefficient * length_m * 0.3
+        moisture_factor = 1.0 + 0.5 * moisture
         return base_absorption * moisture_factor
 
     def _waveguide_attenuation(self, width_m: float, length_m: float) -> float:

@@ -18,8 +18,8 @@ from gymnasium import spaces
 class EnvironmentConfig:
     """Configuration for irreversible-action POMDP environments."""
 
-    max_horizon: int = 200
-    initial_budget: int = 10
+    max_horizon: int = 50
+    initial_budget: int = 5
     observation_noise_std: float = 0.1
     seed: Optional[int] = None
 
@@ -105,7 +105,7 @@ class IrreversibleActionPOMDP(gym.Env, ABC):
 
     def reset(
         self, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> Tuple[np.ndarray, dict]:
+    ) -> tuple[np.ndarray, dict]:
         """Reset environment to initial state."""
         super().reset(seed=seed)
         if seed is not None:
@@ -122,7 +122,7 @@ class IrreversibleActionPOMDP(gym.Env, ABC):
         info = self._get_info()
         return obs, info
 
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
         """
         Execute one environment step.
 
