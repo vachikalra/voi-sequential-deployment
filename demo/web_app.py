@@ -24,7 +24,7 @@ except ImportError:
 if HAS_STREAMLIT:
     st.set_page_config(
         page_title="VoI-Guided Decision Making Demo",
-        page_icon="🧠",
+        page_icon="📡",
         layout="wide",
     )
 
@@ -358,7 +358,7 @@ def main():
 
     # Header
     st.markdown("""
-    # 🧠 Can AI Learn *When* to Commit?
+    # Can AI Learn *When* to Commit?
     
     **The Problem**: A rescue team is going deep underground. They have limited radio relays 
     to drop along the way. Once placed, a relay can't be moved. Place too early = waste it. 
