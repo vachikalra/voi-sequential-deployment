@@ -407,7 +407,7 @@ def main():
     # Method explanation columns
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("### 🟢 VoI-PPO (Ours)")
+        st.markdown("### 🟢 VoI-PPO")
         st.caption("Asks: 'Would waiting give me useful info?' Deploys strategically at danger zones.")
     with col2:
         st.markdown("### 🟡 Standard PPO")
@@ -425,7 +425,7 @@ def main():
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
         st.session_state.agents = [
-            SimAgent("VoI-PPO (Ours)", "voi_ppo", st.session_state.mine, budget),
+            SimAgent("VoI-PPO", "voi_ppo", st.session_state.mine, budget),
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
@@ -436,7 +436,7 @@ def main():
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
         st.session_state.agents = [
-            SimAgent("VoI-PPO (Ours)", "voi_ppo", st.session_state.mine, budget),
+            SimAgent("VoI-PPO", "voi_ppo", st.session_state.mine, budget),
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
