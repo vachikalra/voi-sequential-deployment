@@ -24,7 +24,6 @@ except ImportError:
 if HAS_STREAMLIT:
     st.set_page_config(
         page_title="VoI-Guided Decision Making Demo",
-        page_icon="🧠",
         layout="wide",
     )
 
@@ -358,7 +357,7 @@ def main():
 
     # Header
     st.markdown("""
-    # 🧠 Can AI Learn *When* to Commit?
+    # Can AI Learn *When* to Commit?
     
     **The Problem**: A rescue team is going deep underground. They have limited radio relays 
     to drop along the way. Once placed, a relay can't be moved. Place too early = waste it. 
@@ -371,31 +370,31 @@ def main():
 
     # Sidebar controls
     with st.sidebar:
-        st.header("⚙️ Scenario Settings")
+        st.header("Scenario Settings")
         
         st.markdown("**Adjust these to see how each method handles different challenges:**")
         
-        complexity = st.slider("🏔️ Mine Complexity", 0.1, 1.0, 0.6, 0.1,
+        complexity = st.slider("Mine Complexity", 0.1, 1.0, 0.6, 0.1,
                               help="Higher = more twists, bends, and hard-rock zones that kill signal")
-        budget = st.slider("📦 Relay Budget", 2, 10, 4,
+        budget = st.slider("Relay Budget", 2, 10, 4,
                           help="Fewer relays = harder problem. The AI must be more strategic.")
-        seed = st.number_input("🎲 Random Seed", 0, 99999, 117,
+        seed = st.number_input("Random Seed", 0, 99999, 117,
                               help="Change this to try different mine layouts")
 
         st.markdown("---")
-        st.markdown("**⚡ Simulation Speed**")
+        st.markdown("**Simulation Speed**")
         speed = st.select_slider("",
                                 options=["Slow (watch closely)", "Normal", "Fast"],
                                 value="Normal")
         speed_map = {"Slow (watch closely)": 0.4, "Normal": 0.15, "Fast": 0.03}
 
         st.markdown("---")
-        run_button = st.button("▶️  Run Experiment", type="primary", use_container_width=True)
-        reset_button = st.button("🔄 New Mine", use_container_width=True)
+        run_button = st.button("Run Experiment", type="primary", use_container_width=True)
+        reset_button = st.button("New Mine", use_container_width=True)
 
         st.markdown("---")
         st.markdown("""
-        ### 🎯 What to Watch For
+        ### What to Watch For
         
         1. **Blue path** = connected  
            **Red path** = lost contact
@@ -407,13 +406,13 @@ def main():
     # Method explanation columns
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("### 🟢 VoI-PPO (Ours)")
+        st.markdown("### VoI-PPO")
         st.caption("Asks: 'Would waiting give me useful info?' Deploys strategically at danger zones.")
     with col2:
-        st.markdown("### 🟡 Standard PPO")
+        st.markdown("### Standard PPO")
         st.caption("Learns a fixed threshold from experience. Deploys when signal gets low.")
     with col3:
-        st.markdown("### 🔴 Signal Threshold")
+        st.markdown("### Signal Threshold")
         st.caption("Simple rule: deploy whenever signal drops below 30%. No planning.")
 
     st.markdown("---")
@@ -425,7 +424,7 @@ def main():
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
         st.session_state.agents = [
-            SimAgent("VoI-PPO (Ours)", "voi_ppo", st.session_state.mine, budget),
+            SimAgent("VoI-PPO", "voi_ppo", st.session_state.mine, budget),
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
@@ -436,7 +435,7 @@ def main():
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
         st.session_state.agents = [
-            SimAgent("VoI-PPO (Ours)", "voi_ppo", st.session_state.mine, budget),
+            SimAgent("VoI-PPO", "voi_ppo", st.session_state.mine, budget),
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
@@ -473,9 +472,9 @@ def main():
                     c1, c2, c3 = st.columns(3)
                     
                     uptime_color = "normal" if agent.uptime > 0.8 else ("off" if agent.uptime < 0.5 else "normal")
-                    c1.metric("📡 Uptime", f"{agent.uptime:.0%}")
-                    c2.metric("📦 Budget", f"{agent.budget_remaining}/{agent.budget}")
-                    c3.metric("📶 Signal", f"{agent.signal:.0%}")
+                    c1.metric("Uptime", f"{agent.uptime:.0%}")
+                    c2.metric("Budget", f"{agent.budget_remaining}/{agent.budget}")
+                    c3.metric("Signal", f"{agent.signal:.0%}")
             
             # Live narration
             with status_placeholder.container():
@@ -490,7 +489,7 @@ def main():
                 else:
                     disconnected = [a.name for a in agents if not a.connected]
                     if disconnected:
-                        st.error(f"⚠️ LOST CONTACT: {', '.join(disconnected)}")
+                        st.error(f"LOST CONTACT: {', '.join(disconnected)}")
 
             progress_bar.progress((step + 1) / max_steps)
             time.sleep(speed_map[speed])
@@ -500,28 +499,27 @@ def main():
 
         # === RESULTS ===
         st.markdown("---")
-        st.markdown("## 📊 Results")
+        st.markdown("## Results")
         
         # Summary cards
         result_cols = st.columns(3)
-        icons = ["🟢", "🟡", "🔴"]
         
         for i, (agent, rcol) in enumerate(zip(agents, result_cols)):
             with rcol:
                 used = agent.budget - agent.budget_remaining
-                st.markdown(f"### {icons[i]} {agent.name}")
+                st.markdown(f"### {agent.name}")
                 st.metric("Communication Uptime", f"{agent.uptime:.1%}")
                 st.metric("Relays Used", f"{used} / {agent.budget}")
                 st.metric("Efficiency", f"{agent.efficiency:.2f} uptime/relay")
                 
                 if not agent.connected:
-                    st.error("❌ Lost contact at end")
+                    st.error("Lost contact at end")
                 else:
-                    st.success("✅ Connected at end")
+                    st.success("Connected at end")
 
         # Key takeaway
         st.markdown("---")
-        st.markdown("## 💡 Key Insight")
+        st.markdown("## Key Insight")
         
         voi_agent = agents[0]
         baseline_agent = agents[1]
@@ -537,7 +535,7 @@ def main():
             **{voi_agent.uptime:.0%} uptime** using only **{voi_used} relays** — 
             vs Standard PPO's {bl_used} relays and Signal Threshold's {th_used} relays.
             
-            🧠 *The AI learned that sometimes the best action is to wait for more information 
+            *The AI learned that sometimes the best action is to wait for more information 
             before committing an irreversible decision.*
             """)
         elif voi_agent.uptime > threshold_agent.uptime:
@@ -555,7 +553,7 @@ def main():
             """)
         
         # Explanation of WHY
-        with st.expander("🔬 Why does VoI-PPO work better?", expanded=False):
+        with st.expander("Why does VoI-PPO work better?", expanded=False):
             st.markdown("""
             ### The Science Behind It
             
@@ -565,9 +563,9 @@ def main():
             will I learn something that changes my decision?"
             
             This matters because:
-            - 🏔️ **Geology varies**: A relay in soft sandstone covers more distance than one in hard granite
-            - 🔄 **Bends kill signal**: A sharp turn ahead means you should save your relay for AFTER the turn
-            - 📦 **Budget is finite**: Every wasted relay is one you can't use later when it matters more
+            - **Geology varies**: A relay in soft sandstone covers more distance than one in hard granite
+            - **Bends kill signal**: A sharp turn ahead means you should save your relay for AFTER the turn
+            - **Budget is finite**: Every wasted relay is one you can't use later when it matters more
             
             The VoI estimator learns to recognize these situations and WAIT when waiting 
             would lead to a better deployment decision.
@@ -580,7 +578,7 @@ def main():
                 svg = draw_mine_svg(st.session_state.mine, agent)
                 st.markdown(svg, unsafe_allow_html=True)
 
-        st.info("👆 Press **▶️ Run Experiment** in the sidebar to start the comparison. Try setting budget to **3 or 4** to see the biggest differences!")
+        st.info("Press **Run Experiment** in the sidebar to start the comparison. Try setting budget to **3 or 4** to see the biggest differences!")
 
     # Footer
     st.markdown("---")
