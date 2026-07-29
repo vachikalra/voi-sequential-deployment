@@ -24,7 +24,7 @@ except ImportError:
 if HAS_STREAMLIT:
     st.set_page_config(
         page_title="VoI-Guided Decision Making Demo",
-        page_icon="🧠",
+        page_icon="📡",
         layout="wide",
     )
 
@@ -358,7 +358,7 @@ def main():
 
     # Header
     st.markdown("""
-    # 🧠 Can AI Learn *When* to Commit?
+    # Can AI Learn *When* to Commit?
     
     **The Problem**: A rescue team is going deep underground. They have limited radio relays 
     to drop along the way. Once placed, a relay can't be moved. Place too early = waste it. 
@@ -395,7 +395,7 @@ def main():
 
         st.markdown("---")
         st.markdown("""
-        ### 🎯 What to Watch For
+        ### What to Watch For
         
         1. **Blue path** = connected  
            **Red path** = lost contact
@@ -407,7 +407,7 @@ def main():
     # Method explanation columns
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("### 🟢 VoI-PPO (Ours)")
+        st.markdown("### 🟢 VoI-PPO")
         st.caption("Asks: 'Would waiting give me useful info?' Deploys strategically at danger zones.")
     with col2:
         st.markdown("### 🟡 Standard PPO")
@@ -425,7 +425,7 @@ def main():
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
         st.session_state.agents = [
-            SimAgent("VoI-PPO (Ours)", "voi_ppo", st.session_state.mine, budget),
+            SimAgent("VoI-PPO", "voi_ppo", st.session_state.mine, budget),
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
@@ -436,7 +436,7 @@ def main():
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
         st.session_state.agents = [
-            SimAgent("VoI-PPO (Ours)", "voi_ppo", st.session_state.mine, budget),
+            SimAgent("VoI-PPO", "voi_ppo", st.session_state.mine, budget),
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
@@ -500,7 +500,7 @@ def main():
 
         # === RESULTS ===
         st.markdown("---")
-        st.markdown("## 📊 Results")
+        st.markdown("## Results")
         
         # Summary cards
         result_cols = st.columns(3)
@@ -521,7 +521,7 @@ def main():
 
         # Key takeaway
         st.markdown("---")
-        st.markdown("## 💡 Key Insight")
+        st.markdown("## Key Insight")
         
         voi_agent = agents[0]
         baseline_agent = agents[1]
@@ -537,7 +537,7 @@ def main():
             **{voi_agent.uptime:.0%} uptime** using only **{voi_used} relays** — 
             vs Standard PPO's {bl_used} relays and Signal Threshold's {th_used} relays.
             
-            🧠 *The AI learned that sometimes the best action is to wait for more information 
+            *The AI learned that sometimes the best action is to wait for more information 
             before committing an irreversible decision.*
             """)
         elif voi_agent.uptime > threshold_agent.uptime:
@@ -565,9 +565,9 @@ def main():
             will I learn something that changes my decision?"
             
             This matters because:
-            - 🏔️ **Geology varies**: A relay in soft sandstone covers more distance than one in hard granite
-            - 🔄 **Bends kill signal**: A sharp turn ahead means you should save your relay for AFTER the turn
-            - 📦 **Budget is finite**: Every wasted relay is one you can't use later when it matters more
+            - **Geology varies**: A relay in soft sandstone covers more distance than one in hard granite
+            - **Bends kill signal**: A sharp turn ahead means you should save your relay for AFTER the turn
+            - **Budget is finite**: Every wasted relay is one you can't use later when it matters more
             
             The VoI estimator learns to recognize these situations and WAIT when waiting 
             would lead to a better deployment decision.
