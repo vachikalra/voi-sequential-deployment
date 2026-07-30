@@ -383,10 +383,11 @@ def main():
 
         st.markdown("---")
         st.markdown("**Simulation Speed**")
-        speed = st.select_slider("",
+        speed = st.select_slider("Speed",
                                 options=["Slow (watch closely)", "Normal", "Fast"],
-                                value="Normal")
-        speed_map = {"Slow (watch closely)": 0.4, "Normal": 0.15, "Fast": 0.03}
+                                value="Normal",
+                                label_visibility="collapsed")
+        speed_map = {"Slow (watch closely)": 0.25, "Normal": 0.08, "Fast": 0.01}
 
         st.markdown("---")
         run_button = st.button("Run Experiment", type="primary", use_container_width=True)
@@ -420,6 +421,8 @@ def main():
     # Initialize state
     if "running" not in st.session_state:
         st.session_state.running = False
+    if "finished" not in st.session_state:
+        st.session_state.finished = False
     if "mine" not in st.session_state or reset_button:
         st.session_state.mine = DemoMine()
         st.session_state.mine.generate(complexity, seed)
@@ -430,6 +433,7 @@ def main():
         ]
         st.session_state.step = 0
         st.session_state.running = False
+        st.session_state.finished = False
 
     if run_button:
         st.session_state.mine = DemoMine()
@@ -439,71 +443,72 @@ def main():
             SimAgent("Standard PPO", "baseline_ppo", st.session_state.mine, budget),
             SimAgent("Signal Threshold", "threshold", st.session_state.mine, budget),
         ]
+        st.session_state.step = 0
         st.session_state.running = True
+        st.session_state.finished = False
+        st.session_state.speed_delay = speed_map[speed]
 
     # Display
     cols = st.columns(3)
+    mine = st.session_state.mine
+    agents = st.session_state.agents
+    max_steps = max(len(mine.path) - 1, 1)
 
-    # Run simulation
-    if st.session_state.running:
-        mine = st.session_state.mine
-        agents = st.session_state.agents
-
-        placeholder_cols = [col.empty() for col in cols]
-        metrics_cols = [col.empty() for col in cols]
-        
-        status_placeholder = st.empty()
-        progress_bar = st.progress(0)
-
-        max_steps = len(mine.path) - 1
-        method_colors_hex = ["#10b981", "#f59e0b", "#ef4444"]
-
-        for step in range(max_steps):
+    # Advance one simulation step per rerun (keeps websocket alive)
+    if st.session_state.running and not st.session_state.finished:
+        if st.session_state.step < max_steps:
             for agent in agents:
                 agent.step()
+            st.session_state.step += 1
 
-            # Update display
-            for i, (agent, pcol, mcol) in enumerate(zip(agents, placeholder_cols, metrics_cols)):
-                with pcol.container():
-                    svg = draw_mine_svg(mine, agent)
-                    st.markdown(svg, unsafe_allow_html=True)
+        for i, (col, agent) in enumerate(zip(cols, agents)):
+            with col:
+                svg = draw_mine_svg(mine, agent)
+                st.markdown(svg, unsafe_allow_html=True)
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Uptime", f"{agent.uptime:.0%}")
+                c2.metric("Budget", f"{agent.budget_remaining}/{agent.budget}")
+                c3.metric("Signal", f"{agent.signal:.0%}")
 
-                with mcol.container():
-                    c1, c2, c3 = st.columns(3)
-                    
-                    uptime_color = "normal" if agent.uptime > 0.8 else ("off" if agent.uptime < 0.5 else "normal")
-                    c1.metric("Uptime", f"{agent.uptime:.0%}")
-                    c2.metric("Budget", f"{agent.budget_remaining}/{agent.budget}")
-                    c3.metric("Signal", f"{agent.signal:.0%}")
-            
-            # Live narration
-            with status_placeholder.container():
-                step_events = []
-                for agent in agents:
-                    if agent.deploy_log and agent.deploy_log[-1][0] == agent.progress:
-                        reason = agent.deploy_log[-1][1]
-                        step_events.append(f"**{agent.name}** deployed relay! ({reason})")
-                
-                if step_events:
-                    st.info(" | ".join(step_events))
-                else:
-                    disconnected = [a.name for a in agents if not a.connected]
-                    if disconnected:
-                        st.error(f"LOST CONTACT: {', '.join(disconnected)}")
+        step_events = []
+        for agent in agents:
+            if agent.deploy_log and agent.deploy_log[-1][0] == agent.progress:
+                reason = agent.deploy_log[-1][1]
+                step_events.append(f"**{agent.name}** deployed relay! ({reason})")
 
-            progress_bar.progress((step + 1) / max_steps)
-            time.sleep(speed_map[speed])
+        if step_events:
+            st.info(" | ".join(step_events))
+        else:
+            disconnected = [a.name for a in agents if not a.connected]
+            if disconnected:
+                st.error(f"LOST CONTACT: {', '.join(disconnected)}")
 
-        st.session_state.running = False
-        status_placeholder.empty()
+        st.progress(min(st.session_state.step / max_steps, 1.0))
+
+        if st.session_state.step >= max_steps:
+            st.session_state.running = False
+            st.session_state.finished = True
+            st.rerun()
+        else:
+            time.sleep(st.session_state.get("speed_delay", 0.08))
+            st.rerun()
+
+    elif st.session_state.finished:
+        for i, (col, agent) in enumerate(zip(cols, agents)):
+            with col:
+                svg = draw_mine_svg(mine, agent)
+                st.markdown(svg, unsafe_allow_html=True)
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Uptime", f"{agent.uptime:.0%}")
+                c2.metric("Budget", f"{agent.budget_remaining}/{agent.budget}")
+                c3.metric("Signal", f"{agent.signal:.0%}")
 
         # === RESULTS ===
         st.markdown("---")
         st.markdown("## Results")
-        
-        # Summary cards
+
         result_cols = st.columns(3)
-        
+
         for i, (agent, rcol) in enumerate(zip(agents, result_cols)):
             with rcol:
                 used = agent.budget - agent.budget_remaining
@@ -511,7 +516,7 @@ def main():
                 st.metric("Communication Uptime", f"{agent.uptime:.1%}")
                 st.metric("Relays Used", f"{used} / {agent.budget}")
                 st.metric("Efficiency", f"{agent.efficiency:.2f} uptime/relay")
-                
+
                 if not agent.connected:
                     st.error("Lost contact at end")
                 else:
@@ -520,15 +525,15 @@ def main():
         # Key takeaway
         st.markdown("---")
         st.markdown("## Key Insight")
-        
+
         voi_agent = agents[0]
         baseline_agent = agents[1]
         threshold_agent = agents[2]
-        
+
         voi_used = voi_agent.budget - voi_agent.budget_remaining
         bl_used = baseline_agent.budget - baseline_agent.budget_remaining
         th_used = threshold_agent.budget - threshold_agent.budget_remaining
-        
+
         if voi_agent.uptime >= baseline_agent.uptime and voi_used <= bl_used:
             st.success(f"""
             **VoI-PPO wins!** By estimating the *value of waiting*, it achieved 
@@ -551,8 +556,7 @@ def main():
             **Try reducing the relay budget to 2-3** to see where VoI-PPO's strategic 
             timing really shines under resource pressure!
             """)
-        
-        # Explanation of WHY
+
         with st.expander("Why does VoI-PPO work better?", expanded=False):
             st.markdown("""
             ### The Science Behind It
